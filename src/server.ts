@@ -11,13 +11,15 @@ import { connectDB } from './lib/db.ts';
 
 const app = express();
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res)=>{
-    res.send('home !!!!');
-});
+
 
 app.use('/auth', authRouter);
+
+app.get('/', (req, res)=>{
+    res.json({message: 'home'});
+});
 
 connectDB();
 
