@@ -3,7 +3,9 @@ dotenv.config();
 
 import express from 'express';
 
-import authRouter from './routes/auth.route.js';
+import authRouter from './routes/auth.route.ts';
+
+import { connectDB } from './lib/db.ts';
 
 
 
@@ -17,7 +19,7 @@ app.get('/', (req, res)=>{
 
 app.use('/auth', authRouter);
 
-
+connectDB();
 
 app.listen(PORT, ()=>{
     console.log('port running on', PORT);
