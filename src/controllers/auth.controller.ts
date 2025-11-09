@@ -1,13 +1,12 @@
 import type { Request, Response } from 'express';
 
+import bcryptjs from 'bcryptjs';
+
 import User from '../models/User';
 
 export const login = (req: Request, res: Response)=>{
     try{
-        console.log('body ============== ',req.body);
-
         const user = User.findOne({ email: req.body.email });
-
         return res.json({message: 'login'});
     }catch(error){
         return res.status(500).json({message: error});
