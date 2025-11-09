@@ -9,8 +9,8 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 
 // import other files
-import authRouter from './routes/auth.route.ts';
-import { connectDB } from './lib/db.ts';
+import authRouter from './routes/auth.route';
+import { connectDB } from './lib/db';
 
 const app = express();
 
