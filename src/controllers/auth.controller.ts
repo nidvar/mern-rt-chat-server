@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
-
 import bcrypt from 'bcryptjs';
 
 import User from '../models/User';
+import { genAccessToken, createCookie, clearCookie } from '../utils/utils'
 
 export const login = async (req: Request, res: Response)=>{
     try{
@@ -15,6 +15,15 @@ export const login = async (req: Request, res: Response)=>{
         };
         const passwordCheck = await bcrypt.compare(req.body.password, user.password);
         if(passwordCheck){
+
+            const tokenPayload = {
+                username: req.body.username,
+                email: req.body.email
+            }
+
+            const accessToken = genAccessToken(tokenPayload);
+            createCookie(res, 'access', accessToken, 10 * 60 * 1000);
+
             return res.json({message: 'logged In as ' + user.username});
         };
         return res.status(400).json({message: 'Invalid credentials'});
@@ -25,6 +34,7 @@ export const login = async (req: Request, res: Response)=>{
 
 export const logout = async (req: Request, res: Response)=>{
     try{
+        clearCookie(res, 'access');
         return res.json({message: 'logged out'});
     }catch(error){
         return res.status(500).json({message: error});
