@@ -6,10 +6,20 @@ import User from '../models/User';
 
 export const login = async (req: Request, res: Response)=>{
     try{
-        // const user = await User.findOne({ email: req.body.email });
-        return res.json({message: 'login'});
-    }catch(error){
-        return res.status(500).json({message: error});
+        if(req.body.password.length < 6 || req.body.email === ''){
+            return res.status(400).json({ message: 'Invalid credentials'});
+        };
+        const user = await User.findOne({ email: req.body.email });
+        if(!user){
+            return res.status(400).json({ message: 'Invalid credentials'});
+        };
+        const passwordCheck = await bcrypt.compare(req.body.password, user.password);
+        if(passwordCheck){
+            return res.json({message: 'logged In as ' + user.username});
+        };
+        return res.status(400).json({message: 'Invalid credentials'});
+    }catch{
+        return res.status(500).json({message: 'Server Error'});
     }
 }
 
@@ -44,10 +54,10 @@ export const signup = async (req: Request, res: Response)=>{
                 username: req.body.username,
                 password: hashedPassword
             };
-            const result = await User.create(newUser);
-            return res.json({message: 'signed up'});
+            await User.create(newUser);
+            return res.json({message: 'sign up success'});
         }
-        return res.json({message: 'User has not been created???'});
+        return res.json({message: 'Server Error'});
     }catch(error){
         return res.status(500).json({message: error});
     }
