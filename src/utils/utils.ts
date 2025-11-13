@@ -27,4 +27,4 @@ export const clearCookie = function(response: any, cookieName: string){
         path: '/'
     }
     response.clearCookie(cookieName, properties)
-}
+};

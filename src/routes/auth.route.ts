@@ -10,6 +10,6 @@ router.post('/login', login);
 router.post('/signup', signup);
 router.post('/logout', logout);
 
-router.get('/checkAuth', checkAuth, (_, res)=>{ return res.json({message: 'check working'});})
+router.get('/checkAuth', checkAuth);
 
 export default router;

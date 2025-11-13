@@ -15,18 +15,17 @@ export const login = async (req: Request, res: Response)=>{
         };
         const passwordCheck = await bcrypt.compare(req.body.password, user.password);
         if(passwordCheck){
-
             const tokenPayload = {
-                username: req.body.username,
-                email: req.body.email
+                username: user.username,
+                email: user.email
             }
-
             const accessToken = genAccessToken(tokenPayload);
-            createCookie(res, 'access', accessToken, 10 * 60 * 1000);
+            createCookie(res, 'accessToken', accessToken, 10 * 60 * 1000);
 
             const refreshToken = genRefreshToken(tokenPayload);
-            createCookie(res, 'refresh', refreshToken, 3* 60 * 60 * 1000);
-
+            createCookie(res, 'refreshToken', refreshToken, 3* 60 * 60 * 1000);
+            user.refreshToken = refreshToken;
+            await user.save();
             return res.json({message: 'logged In as ' + user.username});
         };
         return res.status(400).json({message: 'Invalid credentials'});
@@ -37,8 +36,15 @@ export const login = async (req: Request, res: Response)=>{
 
 export const logout = async (req: Request, res: Response)=>{
     try{
-        clearCookie(res, 'access');
-        clearCookie(res, 'refresh');
+        console.log('logging out !', req.cookies.refreshToken)
+        const user = await User.findOne({refreshToken: req.cookies.refreshToken});
+        console.log(user);
+        if(user){
+            user.refreshToken = '';
+            await user.save();
+        }
+        clearCookie(res, 'accessToken');
+        clearCookie(res, 'refreshToken');
         return res.json({message: 'logged out'});
     }catch(error){
         return res.status(500).json({message: error});
