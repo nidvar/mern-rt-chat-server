@@ -11,6 +11,7 @@ import express from 'express';
 // import other files
 import authRouter from './routes/auth.route';
 import { connectDB } from './lib/db';
+import { limiter } from '../src/utils/utils';
 
 const app = express();
 
@@ -32,7 +33,7 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-app.use('/auth', authRouter);
+app.use('/auth', limiter, authRouter);
 
 app.get('/', (req, res)=>{
     res.json({message: 'home'});
