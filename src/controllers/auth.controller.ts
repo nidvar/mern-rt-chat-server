@@ -1,8 +1,16 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 import User from '../models/User';
-import { genAccessToken, genRefreshToken, createCookie, clearCookie } from '../utils/utils'
+import { genAccessToken, genRefreshToken, createCookie, clearCookie } from '../utils/utils';
+
+type JwtPayload = {
+    username: string
+    email: string
+    iat?: number;
+    exp?: number;
+}
 
 export const login = async (req: Request, res: Response)=>{
     try{
@@ -80,5 +88,42 @@ export const signup = async (req: Request, res: Response)=>{
         return res.json({message: 'Server Error'});
     }catch(error){
         return res.status(500).json({message: error});
+    }
+}
+
+export const checkAuth = async function(req: Request, res: Response){
+    try{
+        if(!req.cookies.accessToken && !req.cookies.refreshToken){
+            console.log('there are no cookies at all');
+            return res.json({isLoggedIn: false});
+        }
+        if(req.cookies.accessToken){
+            const accessDetails = jwt.verify(req.cookies.accessToken, process.env.ACCESS_SECRET!) as JwtPayload;
+            if(accessDetails){
+                console.log('there is an access token');
+                return res.json({isLoggedIn: true, userData: accessDetails});
+            }
+        }
+        if(req.cookies.refreshToken){
+            const refreshDetails = jwt.verify(req.cookies.refreshToken, process.env.REFRESH_SECRET!) as JwtPayload;
+            if(refreshDetails){
+                console.log('there is a refresh token');
+                const user = await User.findOne({ refresh: req.cookies.refreshToken });
+                if(user){
+                    console.log('there is a user with the refresh token')
+                    const tokenPayload = {
+                        username: user.username,
+                        email: user.email
+                    }
+                    const accessToken = genAccessToken(tokenPayload);
+                    createCookie(res, 'accessToken', accessToken, 10 * 60 * 1000);
+                }
+                console.log('returning refresh details')
+                return res.json({isLoggedIn: true, userData: refreshDetails});
+            }
+        }
+    }catch(error){
+        const err = error as Error
+        return res.status(500).json({ message: err.message})
     }
 }
