@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 
 import User from '../models/User';
-import { genAccessToken, createCookie, clearCookie } from '../utils/utils'
+import { genAccessToken, genRefreshToken, createCookie, clearCookie } from '../utils/utils'
 
 export const login = async (req: Request, res: Response)=>{
     try{
@@ -24,6 +24,9 @@ export const login = async (req: Request, res: Response)=>{
             const accessToken = genAccessToken(tokenPayload);
             createCookie(res, 'access', accessToken, 10 * 60 * 1000);
 
+            const refreshToken = genRefreshToken(tokenPayload);
+            createCookie(res, 'refresh', refreshToken, 3* 60 * 60 * 1000);
+
             return res.json({message: 'logged In as ' + user.username});
         };
         return res.status(400).json({message: 'Invalid credentials'});
@@ -35,6 +38,7 @@ export const login = async (req: Request, res: Response)=>{
 export const logout = async (req: Request, res: Response)=>{
     try{
         clearCookie(res, 'access');
+        clearCookie(res, 'refresh');
         return res.json({message: 'logged out'});
     }catch(error){
         return res.status(500).json({message: error});
