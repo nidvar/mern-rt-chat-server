@@ -1,17 +1,9 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
 import User from '../models/User';
-import { genAccessToken, genRefreshToken, createCookie, clearCookie } from '../utils/utils';
-import cloudinary from '../lib/cloudinary';
+import { genAccessToken, genRefreshToken, createCookie, clearCookie, uploadImageCloudinary } from '../utils/utils';
 
-type JwtPayload = {
-    username: string
-    email: string
-    iat?: number;
-    exp?: number;
-}
 
 export const login = async (req: Request, res: Response)=>{
     try{
@@ -80,10 +72,14 @@ export const signup = async (req: Request, res: Response)=>{
         if(!userDetails[0] && !userDetails[1]){
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+            const cloudinaryImageURL = await uploadImageCloudinary(req.body.profilePic);
+
             const newUser = {
                 email: req.body.email,
                 username: req.body.username,
-                password: hashedPassword
+                password: hashedPassword,
+                profilePic: cloudinaryImageURL
             };
             await User.create(newUser);
             return res.json({message: 'sign up success'});
@@ -101,13 +97,11 @@ export const updateProfile = async function(req: Request, res: Response){
             console.log('There is a res locals')
             const user = await User.findOne({ email: res.locals.user.email });
             if(user){
-                console.log('There is a mongodb user')
-                const uploadResponse = await cloudinary.uploader.upload(req.body.profilePic);
-                if(uploadResponse){
-                    user.profilePic = uploadResponse.secure_url;
-                    await user.save();
-                    return res.json({ message: 'updating profile' });
-                }
+                console.log('There is a mongodb user');
+                const cloudinaryImageURL = await uploadImageCloudinary(req.body.profilePic);
+                user.profilePic = cloudinaryImageURL as string;
+                await user.save();
+                return res.json({ message: 'updating profile' });
             };
         }
         return res.status(400).json({message: 'User not found'});

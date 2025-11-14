@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-
+import { getCloudinary } from '../lib/cloudinary';
 
 export const genAccessToken = function(payload: { username: string, email: string}){
     return jwt.sign(payload, process.env.ACCESS_SECRET!, {expiresIn: '10m'});
@@ -29,3 +29,17 @@ export const clearCookie = function(response: any, cookieName: string){
     }
     response.clearCookie(cookieName, properties)
 };
+
+export const uploadImageCloudinary = async function(image: string){
+    try{
+        const cloud = getCloudinary();
+        const uploadResponse = await cloud.uploader.upload(image);
+        if(uploadResponse){
+            return uploadResponse.secure_url;
+        }else{
+            return '';
+        }
+    }catch(error){
+        console.log('==============',error)
+    }
+}
