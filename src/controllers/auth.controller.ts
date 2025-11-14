@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 
 import User from '../models/User';
 import { genAccessToken, genRefreshToken, createCookie, clearCookie } from '../utils/utils';
+import cloudinary from '../lib/cloudinary';
 
 type JwtPayload = {
     username: string
@@ -93,6 +94,15 @@ export const signup = async (req: Request, res: Response)=>{
         return res.status(500).json({message: error});
     }
 }
+
+export const updateProfile = async function(req: Request, res: Response){
+    try{
+        console.log('updating profile', req.body, cloudinary);
+        return res.json({ message: 'updating profile' });
+    }catch(error){
+        console.log(error);
+    }
+};
 
 export const checkAuth = async function(req: Request, res: Response){
     try{

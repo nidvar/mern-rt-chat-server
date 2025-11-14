@@ -1,12 +1,14 @@
 import express from 'express';
 
-import { login, signup, logout, checkAuth } from '../controllers/auth.controller';
+import { login, signup, logout, checkAuth, updateProfile } from '../controllers/auth.controller';
 
 const router = express.Router();
 
 router.post('/login', login);
 router.post('/signup', signup);
 router.post('/logout', logout);
+
+router.put('/update', updateProfile)
 
 router.get('/checkAuth', checkAuth);
 
