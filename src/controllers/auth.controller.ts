@@ -96,17 +96,34 @@ export const signup = async (req: Request, res: Response)=>{
 
 export const updateProfile = async function(req: Request, res: Response){
     try{
-        console.log('update profile==========', res.locals.user)
-        return res.json({ message: 'updating profile' });
+        console.log('update profile==========', res.locals.user);
+        if(res.locals.user != null){
+            console.log('There is a res locals')
+            const user = await User.findOne({ email: res.locals.user.email });
+            if(user){
+                console.log('There is a mongodb user')
+                const uploadResponse = await cloudinary.uploader.upload(req.body.profilePic);
+                if(uploadResponse){
+                    user.profilePic = uploadResponse.secure_url;
+                    await user.save();
+                    return res.json({ message: 'updating profile' });
+                }
+            };
+        }
+        return res.status(400).json({message: 'User not found'});
     }catch(error){
-        console.log(error);
+        res.status(500).json({ message: (error as Error).message });
     }
 };
 
 export const checkAuth = async function(req: Request, res: Response){
     try{
         if(res.locals.user !== null){
+            console.log("user is not null")
             return res.json({isLoggedIn: true, userData: res.locals.user});
+        }else{
+            console.log("user is null");
+            return res.json({isLoggedIn: false, userData: null});
         }
     }catch(error){
         const err = error as Error
