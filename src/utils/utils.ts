@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { getCloudinary } from '../lib/cloudinary';
 
-export const genAccessToken = function(payload: { username: string, email: string}){
+export const genAccessToken = function(payload: { username: string, email: string, profilePic: string}){
     return jwt.sign(payload, process.env.ACCESS_SECRET!, {expiresIn: '10m'});
 }
 
-export const genRefreshToken = function(payload: {username: string, email: string}){
+export const genRefreshToken = function(payload: {username: string, email: string, profilePic: string}){
     return jwt.sign(payload, process.env.REFRESH_SECRET!, {expiresIn: '3h'});
 }
 
@@ -35,11 +35,12 @@ export const uploadImageCloudinary = async function(image: string){
         const cloud = getCloudinary();
         const uploadResponse = await cloud.uploader.upload(image);
         if(uploadResponse){
+            console.log(uploadResponse.secure_url);
             return uploadResponse.secure_url;
         }else{
             return '';
         }
     }catch(error){
-        console.log('==============',error)
+        console.log('==============>',error)
     }
 }

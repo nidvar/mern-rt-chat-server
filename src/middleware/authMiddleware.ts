@@ -7,6 +7,7 @@ import { genAccessToken, createCookie } from '../utils/utils';
 type JwtPayload = {
     username: string
     email: string
+    profilePic: string
     iat?: number;
     exp?: number;
 }
@@ -47,7 +48,8 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
                     };
                     const payload = {
                         username: refreshDetails.username,
-                        email: refreshDetails.email
+                        email: refreshDetails.email,
+                        profilePic: refreshDetails.profilePic
                     }
                     const accessToken = genAccessToken(payload);
                     createCookie(res, 'accessToken', accessToken, 10 * 60 * 1000);

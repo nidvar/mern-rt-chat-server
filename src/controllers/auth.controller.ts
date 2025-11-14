@@ -18,7 +18,8 @@ export const login = async (req: Request, res: Response)=>{
         if(passwordCheck){
             const tokenPayload = {
                 username: user.username,
-                email: user.email
+                email: user.email,
+                profilePic: user.profilePic
             }
             const accessToken = genAccessToken(tokenPayload);
             createCookie(res, 'accessToken', accessToken, 10 * 60 * 1000);
@@ -74,13 +75,13 @@ export const signup = async (req: Request, res: Response)=>{
             const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
             const cloudinaryImageURL = await uploadImageCloudinary(req.body.profilePic);
-
             const newUser = {
                 email: req.body.email,
                 username: req.body.username,
                 password: hashedPassword,
-                profilePic: cloudinaryImageURL
+                profilePic: cloudinaryImageURL? cloudinaryImageURL : ''
             };
+
             await User.create(newUser);
             return res.json({message: 'sign up success'});
         }
