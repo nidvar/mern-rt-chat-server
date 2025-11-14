@@ -48,9 +48,8 @@ export const login = async (req: Request, res: Response)=>{
 
 export const logout = async (req: Request, res: Response)=>{
     try{
-        console.log('logging out !', req.cookies.refreshToken)
+        console.log('logging out !')
         const user = await User.findOne({refreshToken: req.cookies.refreshToken});
-        console.log(user);
         if(user){
             user.refreshToken = '';
             await user.save();
@@ -97,7 +96,7 @@ export const signup = async (req: Request, res: Response)=>{
 
 export const updateProfile = async function(req: Request, res: Response){
     try{
-        console.log('updating profile', req.body, cloudinary);
+        console.log('update profile==========', res.locals.user)
         return res.json({ message: 'updating profile' });
     }catch(error){
         console.log(error);
@@ -106,34 +105,8 @@ export const updateProfile = async function(req: Request, res: Response){
 
 export const checkAuth = async function(req: Request, res: Response){
     try{
-        if(!req.cookies.accessToken && !req.cookies.refreshToken){
-            console.log('there are no cookies at all');
-            return res.json({isLoggedIn: false});
-        }
-        if(req.cookies.accessToken){
-            const accessDetails = jwt.verify(req.cookies.accessToken, process.env.ACCESS_SECRET!) as JwtPayload;
-            if(accessDetails){
-                console.log('there is an access token');
-                return res.json({isLoggedIn: true, userData: accessDetails});
-            }
-        }
-        if(req.cookies.refreshToken){
-            const refreshDetails = jwt.verify(req.cookies.refreshToken, process.env.REFRESH_SECRET!) as JwtPayload;
-            if(refreshDetails){
-                console.log('there is a refresh token');
-                const user = await User.findOne({ refresh: req.cookies.refreshToken });
-                if(user){
-                    console.log('there is a user with the refresh token')
-                    const tokenPayload = {
-                        username: user.username,
-                        email: user.email
-                    }
-                    const accessToken = genAccessToken(tokenPayload);
-                    createCookie(res, 'accessToken', accessToken, 10 * 60 * 1000);
-                }
-                console.log('returning refresh details')
-                return res.json({isLoggedIn: true, userData: refreshDetails});
-            }
+        if(res.locals.user !== null){
+            return res.json({isLoggedIn: true, userData: res.locals.user});
         }
     }catch(error){
         const err = error as Error
