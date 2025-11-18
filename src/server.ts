@@ -10,6 +10,7 @@ import express from 'express';
 
 // import other files
 import authRouter from './routes/auth.route';
+import messageRouter from './routes/message.route';
 import { connectDB } from './lib/db';
 import { limiter } from '../src/lib/rateLimit';
 import { authMiddleware } from '../src/middleware/authMiddleware';
@@ -36,6 +37,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use('/auth', limiter, authMiddleware, authRouter);
+app.use('/messages', limiter, authMiddleware, messageRouter);
 
 connectDB();
 
