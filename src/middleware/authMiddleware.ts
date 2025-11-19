@@ -13,6 +13,7 @@ type JwtPayload = {
 }
 
 export const authMiddleware = async function(req: Request, res: Response, next: NextFunction){
+    res.locals.user = null;
     console.log('middleware start ========================= ');
     try{
         if(!req.cookies.accessToken && !req.cookies.refreshToken){

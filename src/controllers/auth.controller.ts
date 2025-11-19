@@ -115,7 +115,7 @@ export const updateProfile = async function(req: Request, res: Response){
 export const checkAuth = async function(req: Request, res: Response){
     try{
         if(res.locals.user !== null){
-            console.log("user is not null")
+            console.log("user is not null");
             return res.json({isLoggedIn: true, userData: res.locals.user});
         }else{
             console.log("user is null");

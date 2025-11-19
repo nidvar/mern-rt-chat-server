@@ -12,6 +12,6 @@ router.post('/logout', logout);
 router.put('/update', authMiddleware, updateProfile);
 
 
-router.get('/checkAuth', checkAuth);
+router.get('/checkAuth', authMiddleware, checkAuth);
 
 export default router;

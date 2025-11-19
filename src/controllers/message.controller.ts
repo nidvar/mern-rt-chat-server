@@ -11,7 +11,7 @@ export const getAllContacts = async (req: Request, res: Response)=>{
         console.log('req body ============ >>>>>>>> ', req.body);
         console.log('res.locals.user >>>>>>>> ', res.locals.user);
 
-        const AllOtherUsers = await User.find({email: { $ne: res.locals.user.email }}).select("-updatedAt -password -refreshToken -__v");
+        const AllOtherUsers = await User.find({ email: { $ne: res.locals.user.email }}).select("-updatedAt -password -refreshToken -__v");
 
         console.log(AllOtherUsers);
 
@@ -31,7 +31,7 @@ export const getMessagesByUserId = async (req: Request, res: Response)=>{
                 { senderId: recieverId, recieverId: myId }
             ]
         });
-        res.status(200).json(messages)
+        res.status(200).json(messages);
     }catch(err){
         console.log(err);
         res.status(500).json({error: 'server error'})
@@ -59,9 +59,38 @@ export const sendMessage = async (req: Request, res: Response)=>{
 
         await message.save();
 
+    }catch(err){
+        console.log(err);
+        res.status(500).json({error: 'server error'})
+    }
+};
+
+export const getChatPartners = async (req: Request, res: Response)=>{
+    try{
+
+        const allMessages = await Message.find({
+            $or: [
+                { senderId: res.locals.user.id },
+                { recieverId: res.locals.user.id }
+            ]
+        });
+
+        const chatPartnerIds = allMessages.map((item)=>{
+            if(item.senderId.toString() === res.locals.user.id){
+                return item.recieverId;
+            }else{
+                return item.senderId;
+            };
+        });
+
+        console.log(chatPartnerIds);
+
+        const allChatPartners = await User.find({_id: {$in: chatPartnerIds}}).select("-password");
+
+        return res.status(200).json(allChatPartners);
 
     }catch(err){
         console.log(err);
         res.status(500).json({error: 'server error'})
     }
-}
+};
