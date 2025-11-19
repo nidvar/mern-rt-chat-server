@@ -12,15 +12,12 @@ type JwtPayload = {
     exp?: number;
 }
 
-
-// SOFT MIDDLEWARE
 export const authMiddleware = async function(req: Request, res: Response, next: NextFunction){
-    console.log('middleware start ========================= ')
+    console.log('middleware start ========================= ');
     try{
         if(!req.cookies.accessToken && !req.cookies.refreshToken){
             console.log('there are no cookies at all');
-            res.locals.user = null;
-            return next();
+            return res.status(400).json({ message: 'no cookies'});
         };
 
         if(req.cookies.accessToken){
@@ -28,7 +25,7 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
             try {
                 const accessDetails = jwt.verify(req.cookies.accessToken, process.env.ACCESS_SECRET!) as JwtPayload;
                 if(accessDetails){
-                    console.log('access token win')
+                    console.log('access token win');
                     res.locals.user = accessDetails;
                     return next();
                 }
@@ -41,8 +38,7 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
                         const user = await User.findOne({ email: refreshDetails.email });
                         if(!user){
                             console.log('user not found');
-                            res.locals.user = null;
-                            return next();
+                            return res.status(400).json({ message: 'user not found in db'});
                         }
                         console.log('check database');
                         if(user.refreshToken === req.cookies.refreshToken){
@@ -59,21 +55,21 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
                             createCookie(res, 'refreshToken', refreshToken, 3* 60 * 60 * 1000);
                             user.refreshToken = refreshToken;
                             await user.save();
+                            console.log('token refreshed')
+                            return next();
                         }
                     }
 
                 }catch(err){
                     console.log(err);
                     console.log('refresh token fail');
-                    res.locals.user = null;
-                    return next();
+                    return res.status(400).json({ message: 'refresh token fail'});
                 }
                 return next();
             }
         }
         console.log('there is no access token')
-        res.locals.user = null;
-        return next();
+        return res.status(400).json({ message: 'no access token'});
     }catch(error){
         const err = error as Error
         console.log(err);
