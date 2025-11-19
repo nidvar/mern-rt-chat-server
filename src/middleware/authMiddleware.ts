@@ -46,7 +46,8 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
                             const tokenPayload = {
                                 username: user.username,
                                 email: user.email,
-                                profilePic: user.profilePic
+                                profilePic: user.profilePic,
+                                id: user._id
                             }
                             const accessToken = genAccessToken(tokenPayload);
                             createCookie(res, 'accessToken', accessToken, 10 * 60 * 1000);

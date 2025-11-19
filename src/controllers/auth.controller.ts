@@ -19,7 +19,8 @@ export const login = async (req: Request, res: Response)=>{
             const tokenPayload = {
                 username: user.username,
                 email: user.email,
-                profilePic: user.profilePic
+                profilePic: user.profilePic,
+                id: user._id
             }
             const accessToken = genAccessToken(tokenPayload);
             createCookie(res, 'accessToken', accessToken, 10 * 60 * 1000);
