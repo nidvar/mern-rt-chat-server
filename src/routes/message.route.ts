@@ -5,9 +5,10 @@ const router = express.Router();
 
 
 router.get('/contacts', getAllContacts);
-router.get('/chats', getChatPartners);
+router.get('/chatpartners', getChatPartners);
 
 router.post('/send/:id', sendMessage);
+
 router.get('/:id', getMessagesByUserId);
 
 

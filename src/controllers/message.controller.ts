@@ -8,13 +8,7 @@ import { uploadImageCloudinary } from '../utils/utils';
 
 export const getAllContacts = async (req: Request, res: Response)=>{
     try{
-        console.log('req body ============ >>>>>>>> ', req.body);
-        console.log('res.locals.user >>>>>>>> ', res.locals.user);
-
         const AllOtherUsers = await User.find({ email: { $ne: res.locals.user.email }}).select("-updatedAt -password -refreshToken -__v");
-
-        console.log(AllOtherUsers);
-
         return res.json({message: 'all contacts', users: AllOtherUsers});
     }catch(error){
         console.log(error);
@@ -23,8 +17,9 @@ export const getAllContacts = async (req: Request, res: Response)=>{
 
 export const getMessagesByUserId = async (req: Request, res: Response)=>{
     try{
-        const myId = res.locals.user.email;
+        const myId = res.locals.user.id;
         const recieverId = req.params.id;
+
         const messages = await Message.find({
             $or: [
                 { senderId: myId, recieverId: recieverId },
@@ -40,7 +35,6 @@ export const getMessagesByUserId = async (req: Request, res: Response)=>{
 
 export const sendMessage = async (req: Request, res: Response)=>{
     try{
-
         const myId = res.locals.user.id;
         const recieverId = req.params.id;
 
@@ -67,7 +61,6 @@ export const sendMessage = async (req: Request, res: Response)=>{
 
 export const getChatPartners = async (req: Request, res: Response)=>{
     try{
-
         const allMessages = await Message.find({
             $or: [
                 { senderId: res.locals.user.id },
@@ -82,13 +75,8 @@ export const getChatPartners = async (req: Request, res: Response)=>{
                 return item.senderId;
             };
         });
-
-        console.log(chatPartnerIds);
-
         const allChatPartners = await User.find({_id: {$in: chatPartnerIds}}).select("-password");
-
         return res.status(200).json(allChatPartners);
-
     }catch(err){
         console.log(err);
         res.status(500).json({error: 'server error'})
