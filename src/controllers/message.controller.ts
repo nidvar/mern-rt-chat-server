@@ -75,7 +75,7 @@ export const getChatPartners = async (req: Request, res: Response)=>{
                 return item.senderId;
             };
         });
-        const allChatPartners = await User.find({_id: {$in: chatPartnerIds}}).select("-password");
+        const allChatPartners = await User.find({_id: {$in: chatPartnerIds}}).select("-password -refreshToken");
         return res.status(200).json(allChatPartners);
     }catch(err){
         console.log(err);

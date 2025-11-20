@@ -57,7 +57,8 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
                             createCookie(res, 'refreshToken', refreshToken, 3* 60 * 60 * 1000);
                             user.refreshToken = refreshToken;
                             await user.save();
-                            console.log('token refreshed')
+                            console.log('token refreshed');
+                            res.locals.user = refreshDetails;
                             return next();
                         }
                     }
