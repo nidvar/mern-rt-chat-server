@@ -52,7 +52,9 @@ export const sendMessage = async (req: Request, res: Response)=>{
         })
 
         await message.save();
-        
+
+        return res.status(200).json({message: 'message sent'});
+
     }catch(err){
         console.log(err);
         res.status(500).json({error: 'server error'})
