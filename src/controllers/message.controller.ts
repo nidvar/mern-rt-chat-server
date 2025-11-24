@@ -47,12 +47,12 @@ export const sendMessage = async (req: Request, res: Response)=>{
         const message = new Message({
             senderId: myId,
             recieverId: recieverId,
-            text: req.body.text,
+            text: req.body.message,
             image: imageUrl
         })
 
         await message.save();
-
+        
     }catch(err){
         console.log(err);
         res.status(500).json({error: 'server error'})
