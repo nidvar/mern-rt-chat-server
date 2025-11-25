@@ -16,6 +16,7 @@ import { limiter } from './lib/rateLimit';
 import { authMiddleware } from './middleware/authMiddleware';
 
 const app = express();
+app.set('trust proxy', 1);
 
 const allowedOrigins = [
     'http://localhost:5173'
@@ -32,7 +33,7 @@ app.use(cors({
     credentials: true,
 }));
 
-app.set('trust proxy', 1);
+
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
