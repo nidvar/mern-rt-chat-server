@@ -19,7 +19,7 @@ const app = express();
 
 const allowedOrigins = [
     'http://localhost:5173',
-    'https://mern-rt-chat-server.onrender.com'
+    'https://jarrochat.vercel.app'
 ];
 
 app.use(cors({
