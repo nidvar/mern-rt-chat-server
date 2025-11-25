@@ -12,8 +12,8 @@ import express from 'express';
 import authRouter from './routes/auth.route';
 import messageRouter from './routes/message.route';
 import { connectDB } from './lib/db';
-import { limiter } from '../src/lib/rateLimit';
-import { authMiddleware } from '../src/middleware/authMiddleware';
+import { limiter } from './lib/rateLimit';
+import { authMiddleware } from './middleware/authMiddleware';
 
 const app = express();
 
