@@ -29,7 +29,14 @@ export const login = async (req: Request, res: Response)=>{
             await user.save();
             return res.json({
                 message: 'logged In as ' + user.username,
-                userData: tokenPayload
+                userData: {
+                    username: user.username,
+                    email: user.email,
+                    profilePic: user.profilePic,
+                    lastLoggedIn: user.lastLoggedIn,
+                    createdAt: user.createdAt,
+                    id: user._id
+                }
             });
         };
         return res.status(400).json({message: 'Invalid credentials'});
