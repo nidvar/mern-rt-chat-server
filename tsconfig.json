@@ -1,20 +1,17 @@
 {
   "compilerOptions": {
-    "module": "ES2020",               // ES module output
+    "module": "commonjs",           // ✅ CommonJS output
     "target": "ES2020",
-    "moduleResolution": "node",       // Fixes resolveJsonModule error
-    "types": ["node"],
+    "esModuleInterop": true,        // ✅ allows `import express from 'express'`
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,        // Can now be used safely
-    "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "outDir": "dist"
   },
   "include": ["src/**/*.ts"]
 }

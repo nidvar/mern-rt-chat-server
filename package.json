@@ -1,17 +1,12 @@
 {
   "name": "mern-rt-chat-server",
   "version": "1.0.0",
-  "main": "index.js",
-  "type": "module",
-    "scripts": {
+  "main": "dist/server.js",
+  "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
-    },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
