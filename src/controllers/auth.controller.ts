@@ -25,8 +25,12 @@ export const login = async (req: Request, res: Response)=>{
 
             const refreshToken = genRefreshToken(tokenPayload);
             createCookie(res, 'refreshToken', refreshToken, 3* 60 * 60 * 1000);
+
             user.refreshToken = refreshToken;
+            user.lastLoggedIn = new Date();
+
             await user.save();
+
             return res.json({
                 message: 'logged In as ' + user.username,
                 userData: {
@@ -38,6 +42,7 @@ export const login = async (req: Request, res: Response)=>{
                     id: user._id
                 }
             });
+
         };
         return res.status(400).json({message: 'Invalid credentials'});
     }catch{
