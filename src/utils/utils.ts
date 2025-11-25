@@ -1,12 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { getCloudinary } from '../lib/cloudinary';
-import mongoose from 'mongoose';
 
-export const genAccessToken = function(payload: { username: string, email: string, profilePic: string, id: Object,}){
+export const genAccessToken = function(payload: {username: string, id: Object}){
     return jwt.sign(payload, process.env.ACCESS_SECRET!, {expiresIn: '10m'});
 }
 
-export const genRefreshToken = function(payload: {username: string, email: string, profilePic: string, id: Object,}){
+export const genRefreshToken = function(payload: {username: string, id: Object}){
     return jwt.sign(payload, process.env.REFRESH_SECRET!, {expiresIn: '3h'});
 }
 

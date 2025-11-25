@@ -8,7 +8,7 @@ import { uploadImageCloudinary } from '../utils/utils';
 
 export const getAllContacts = async (req: Request, res: Response)=>{
     try{
-        const AllOtherUsers = await User.find({ email: { $ne: res.locals.user.email }}).select("-updatedAt -password -refreshToken -__v");
+        const AllOtherUsers = await User.find({ username: { $ne: res.locals.user.username }}).select("-updatedAt -password -refreshToken -__v");
         return res.json({message: 'all contacts', users: AllOtherUsers});
     }catch(error){
         console.log(error);

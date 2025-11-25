@@ -14,7 +14,7 @@ type JwtPayload = {
 
 export const authMiddleware = async function(req: Request, res: Response, next: NextFunction){
     res.locals.user = null;
-    console.log('middleware start ========================= ');
+    console.log('middleware start ===> ');
     try{
         if(!req.cookies.accessToken && !req.cookies.refreshToken){
             console.log('there are no cookies at all');
@@ -36,7 +36,7 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
                 try{
                     const refreshDetails = jwt.verify(req.cookies.refreshToken, process.env.REFRESH_SECRET!) as JwtPayload;
                     if(refreshDetails){
-                        const user = await User.findOne({ email: refreshDetails.email });
+                        const user = await User.findOne({ username: refreshDetails.username });
                         if(!user){
                             console.log('user not found');
                             return res.status(400).json({ message: 'user not found in db'});
@@ -46,8 +46,6 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
                             console.log('db refresh token verified')
                             const tokenPayload = {
                                 username: user.username,
-                                email: user.email,
-                                profilePic: user.profilePic,
                                 id: user._id
                             }
                             const accessToken = genAccessToken(tokenPayload);

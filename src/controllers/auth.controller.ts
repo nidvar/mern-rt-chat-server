@@ -18,9 +18,7 @@ export const login = async (req: Request, res: Response)=>{
         if(passwordCheck){
             const tokenPayload = {
                 username: user.username,
-                email: user.email,
-                profilePic: user.profilePic,
-                id: user._id
+                id: user._id,
             }
             const accessToken = genAccessToken(tokenPayload);
             createCookie(res, 'accessToken', accessToken, 10 * 60 * 1000);
@@ -116,7 +114,15 @@ export const checkAuth = async function(req: Request, res: Response){
     try{
         if(res.locals.user !== null){
             console.log("user is not null");
-            return res.json({isLoggedIn: true, userData: res.locals.user});
+
+            const user = await User.findOne({ username: res.locals.user.username }).select("-password -refreshToken -__v");
+            if(user){
+                console.log(user);
+                return res.status(200).json({isLoggedIn: true, userData: user});
+            }else{
+                return res.status(500).json({isLoggedIn: false, message: 'cannot find user'});
+            }
+
         }else{
             console.log("user is null");
             return res.json({isLoggedIn: false, userData: null});

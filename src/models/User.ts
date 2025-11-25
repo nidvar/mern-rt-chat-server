@@ -23,6 +23,10 @@ const UserSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
         default: ''
+    },
+    lastLoggedIn: {
+        type: Date,
+        default: null
     }
 }, {timestamps: true});
 
