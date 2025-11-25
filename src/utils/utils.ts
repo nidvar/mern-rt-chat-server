@@ -12,8 +12,8 @@ export const genRefreshToken = function(payload: {username: string, id: Object})
 export const createCookie = function(response: any, cookieName: string, token: string, age: number){
     const cookieProperties = {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none',
         age: age,
         path: '/'
     }
@@ -23,8 +23,8 @@ export const createCookie = function(response: any, cookieName: string, token: s
 export const clearCookie = function(response: any, cookieName: string){
     const properties = {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none',
         path: '/'
     }
     response.clearCookie(cookieName, properties)
