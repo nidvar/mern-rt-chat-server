@@ -18,7 +18,8 @@ import { authMiddleware } from './middleware/authMiddleware';
 const app = express();
 
 const allowedOrigins = [
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'https://mern-rt-chat-server.onrender.com'
 ];
 
 app.use(cors({
