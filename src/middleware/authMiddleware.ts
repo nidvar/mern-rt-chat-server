@@ -60,6 +60,8 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
                             console.log('token refreshed');
                             res.locals.user = refreshDetails;
                             return next();
+                        }else{
+                            console.log('user refresh token fail');
                         }
                     }
 
