@@ -14,8 +14,8 @@ import messageRouter from './routes/message.route';
 import { connectDB } from './lib/db';
 import { limiter } from './lib/rateLimit';
 import { authMiddleware } from './middleware/authMiddleware';
+import { app, server } from './lib/socket';
 
-const app = express();
 app.set('trust proxy', 1);
 
 const allowedOrigins = [
@@ -45,6 +45,6 @@ app.use('/messages', limiter, authMiddleware, messageRouter);
 
 connectDB();
 
-app.listen(PORT, ()=>{
+server.listen(PORT, ()=>{
     console.log('port running on', PORT);
 });

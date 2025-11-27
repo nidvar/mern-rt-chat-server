@@ -6,8 +6,7 @@ import { genAccessToken, genRefreshToken, createCookie } from '../utils/utils';
 
 type JwtPayload = {
     username: string
-    email: string
-    profilePic: string
+    id: string
     iat?: number;
     exp?: number;
 }

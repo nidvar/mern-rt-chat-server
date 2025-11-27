@@ -10,10 +10,11 @@ export const genRefreshToken = function(payload: {username: string, id: Object})
 }
 
 export const createCookie = function(response: any, cookieName: string, token: string, age: number){
+    console.log('ON_LOCAL----->',process.env.ON_LOCAL)
     const cookieProperties = {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        secure: process.env.ON_LOCAL? false: true,
+        sameSite: process.env.ON_LOCAL? 'lax': 'none',
         age: age,
         path: '/'
     }
@@ -23,8 +24,8 @@ export const createCookie = function(response: any, cookieName: string, token: s
 export const clearCookie = function(response: any, cookieName: string){
     const properties = {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        secure: process.env.ON_LOCAL? false: true,
+        sameSite: process.env.ON_LOCAL? 'lax': 'none',
         path: '/'
     }
     response.clearCookie(cookieName, properties)
