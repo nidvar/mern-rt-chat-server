@@ -32,7 +32,7 @@ export const login = async (req: Request, res: Response)=>{
             await user.save();
 
             return res.json({
-                message: 'logged In as ' + user.username + process.env.ON_LOCAL?' on local env': ' in production',
+                message: `Logged in as ${user.username} ${(process.env.ON_LOCAL? 'on local environment': 'in production environment')}`,
                 userData: {
                     username: user.username,
                     email: user.email,
