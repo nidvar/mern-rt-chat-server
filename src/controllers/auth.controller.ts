@@ -52,7 +52,6 @@ export const login = async (req: Request, res: Response)=>{
 
 export const logout = async (req: Request, res: Response)=>{
     try{
-        console.log('logging out !')
         const user = await User.findOne({refreshToken: req.cookies.refreshToken});
         if(user){
             user.refreshToken = '';
@@ -104,7 +103,7 @@ export const signup = async (req: Request, res: Response)=>{
 
 export const updateProfile = async function(req: Request, res: Response){
     try{
-        console.log('update profile==========', res.locals.user);
+        console.log('update profile: ', res.locals.user);
         if(res.locals.user != null){
             console.log('There is a res locals')
             const user = await User.findOne({ email: res.locals.user.email });
@@ -125,18 +124,17 @@ export const updateProfile = async function(req: Request, res: Response){
 export const checkAuth = async function(req: Request, res: Response){
     try{
         if(res.locals.user !== null){
-            console.log("user is not null");
+            console.log("res.locals has a user");
 
             const user = await User.findOne({ username: res.locals.user.username }).select("-password -refreshToken -__v");
             if(user){
-                console.log(user);
                 return res.status(200).json({isLoggedIn: true, userData: user});
             }else{
                 return res.status(500).json({isLoggedIn: false, message: 'cannot find user'});
             }
 
         }else{
-            console.log("user is null");
+            console.log("no user on res.locals");
             return res.json({isLoggedIn: false, userData: null});
         }
     }catch(error){

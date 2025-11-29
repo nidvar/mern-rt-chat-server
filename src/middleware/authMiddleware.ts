@@ -16,7 +16,7 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
     console.log('middleware start ===> ');
     try{
         if(!req.cookies.accessToken && !req.cookies.refreshToken){
-            console.log('there are no cookies at all');
+            console.log('Zero cookies');
             return res.status(400).json({ message: 'no cookies'});
         };
 
@@ -30,17 +30,17 @@ export const authMiddleware = async function(req: Request, res: Response, next: 
                     return next();
                 }
             } catch (err) {
-                console.log('access token fail, now attempting to refresh');
+                console.log('access token fail, attempting refresh');
                 console.log(err);
                 try{
                     const refreshDetails = jwt.verify(req.cookies.refreshToken, process.env.REFRESH_SECRET!) as JwtPayload;
                     if(refreshDetails){
                         const user = await User.findOne({ username: refreshDetails.username });
                         if(!user){
-                            console.log('user not found');
+                            console.log('db user not found');
                             return res.status(400).json({ message: 'user not found in db'});
                         }
-                        console.log('check database');
+                        console.log('checking database');
                         if(user.refreshToken === req.cookies.refreshToken){
                             console.log('db refresh token verified')
                             const tokenPayload = {
