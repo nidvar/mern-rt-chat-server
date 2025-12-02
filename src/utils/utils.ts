@@ -15,7 +15,7 @@ export const createCookie = function(response: any, cookieName: string, token: s
         httpOnly: true,
         secure: process.env.ON_LOCAL? false: true,
         sameSite: process.env.ON_LOCAL? 'lax': 'none',
-        age: age,
+        maxAge: age,
         path: '/'
     }
     response.cookie(cookieName, token, cookieProperties);
