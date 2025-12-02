@@ -7,17 +7,12 @@ import express from 'express';
 import { socketMiddleware } from '../middleware/socketMiddleware';
 import Message from '../models/message';
 
-const allowedOrigins = [
-    'http://localhost:5173',
-    'https://jarrochat.vercel.app'
-];
-
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: allowedOrigins,
+        origin: "https://jarrochat.vercel.app",
         credentials: true,
     }
 });

@@ -24,13 +24,7 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-    origin: function(origin, callback){
-        if(!origin || allowedOrigins.includes(origin)){
-            callback(null, true);
-        }else{
-            callback(new Error('not allowed by cors'));
-        }
-    },
+    origin: "https://jarrochat.vercel.app",
     credentials: true,
 }));
 
