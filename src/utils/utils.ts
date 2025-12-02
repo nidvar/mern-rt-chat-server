@@ -9,12 +9,12 @@ export const genRefreshToken = function(payload: {username: string, id: Object})
     return jwt.sign(payload, process.env.REFRESH_SECRET!, {expiresIn: '3h'});
 }
 
-export const createCookie = function(response: any, cookieName: string, token: string, age: number){
+export const createCookie = function(response: any, cookieName: string, token: string, age: number, type?: string){
     console.log('ON_LOCAL----->',process.env.ON_LOCAL)
     const cookieProperties = {
         httpOnly: true,
-        secure: process.env.ON_LOCAL? false: true,
-        sameSite: process.env.ON_LOCAL? 'lax': 'none',
+        secure: true,
+        sameSite: 'none',
         maxAge: age,
         path: '/'
     }
@@ -24,8 +24,8 @@ export const createCookie = function(response: any, cookieName: string, token: s
 export const clearCookie = function(response: any, cookieName: string){
     const properties = {
         httpOnly: true,
-        secure: process.env.ON_LOCAL? false: true,
-        sameSite: process.env.ON_LOCAL? 'lax': 'none',
+        secure: true,
+        sameSite: 'none',
         path: '/'
     }
     response.clearCookie(cookieName, properties)
