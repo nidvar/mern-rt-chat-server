@@ -14,9 +14,9 @@ export const createCookie = function(response: any, cookieName: string, token: s
     const cookieProperties = {
         httpOnly: true,
         secure: true,
-        sameSite: 'none',
+        sameSite: 'lax',
         maxAge: age,
-        path: '/'
+        path: '/',
     }
     response.cookie(cookieName, token, cookieProperties);
 };
@@ -25,7 +25,7 @@ export const clearCookie = function(response: any, cookieName: string){
     const properties = {
         httpOnly: true,
         secure: true,
-        sameSite: 'none',
+        sameSite: 'lax',
         path: '/'
     }
     response.clearCookie(cookieName, properties)
