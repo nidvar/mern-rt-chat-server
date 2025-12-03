@@ -10,9 +10,21 @@ import Message from '../models/message';
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://jarrochat.vercel.app',
+    'https://jarrochat.onrender.com',
+];
+
 const io = new Server(server, {
     cors: {
-        origin: "https://jarrochat.vercel.app",
+        origin: function(origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("CORS not allowed"));
+            }
+        },
         credentials: true,
     }
 });
