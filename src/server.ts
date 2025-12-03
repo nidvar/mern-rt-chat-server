@@ -56,14 +56,16 @@ app.use('/messages', limiter, authMiddleware, messageRouter);
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// SPA catch-all — must be **after API routes**
+// SPA catch-all — must be after API routes
 app.get('*', (req, res) => {
     // If the request URL starts with /auth or /messages, return 404 instead of index.html
     if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
         return res.status(404).json({ message: 'API route not found' });
     }
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    // Serve the React SPA index.html
+    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
+
 
 
 // Connect to MongoDB
