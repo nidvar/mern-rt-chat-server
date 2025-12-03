@@ -54,7 +54,7 @@ app.use('/auth', limiter, authRouter);
 app.use('/messages', limiter, authMiddleware, messageRouter);
 
 // Serve static frontend files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // SPA catch-all — must be **after API routes**
 app.get('*', (req, res) => {
