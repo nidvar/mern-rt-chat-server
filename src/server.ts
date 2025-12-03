@@ -17,12 +17,8 @@ import { limiter } from './lib/rateLimit';
 import { authMiddleware } from './middleware/authMiddleware';
 import { app, server } from './lib/socket';
 
-// trust proxy for production
-if (process.env.NODE_ENV === 'production') {
-    app.set('trust proxy', 1);
-} else {
-    app.set('trust proxy', false);
-}
+// TRUST PROXY (Render uses proxies)
+app.set('trust proxy', 1);
 
 // Allowed origins
 const allowedOrigins = [
@@ -33,8 +29,8 @@ const allowedOrigins = [
 
 // CORS middleware
 app.use(cors({
-    origin: function(origin, callback) {
-        // allow requests with no origin (like mobile apps, Postman)
+    origin: (origin, callback) => {
+        // allow no-origin requests (mobile, curl, server)
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -49,24 +45,32 @@ app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve API routes first
+// ---------------------
+// API ROUTES
+// ---------------------
 app.use('/auth', limiter, authRouter);
 app.use('/messages', limiter, authMiddleware, messageRouter);
 
-// Serve static frontend files
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// ---------------------
+// STATIC FRONTEND
+// ---------------------
 
-// SPA catch-all — must be after API routes
+// IMPORTANT: Serve from project root (NOT dist)
+// This works on Render!
+const publicPath = path.join(process.cwd(), 'public');
+
+// Serve static React build
+app.use(express.static(publicPath));
+
+// SPA fallback for React
 app.get('*', (req, res) => {
-    // If the request URL starts with /auth or /messages, return 404 instead of index.html
+    // prevent API routes from falling into the SPA
     if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
         return res.status(404).json({ message: 'API route not found' });
     }
-    // Serve the React SPA index.html
-    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+
+    res.sendFile(path.join(publicPath, 'index.html'));
 });
-
-
 
 // Connect to MongoDB
 connectDB();
