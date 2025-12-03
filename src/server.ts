@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === 'production') {
 const allowedOrigins = [
     'http://localhost:5173',
     'https://jarrochat.vercel.app',
-    'https://mychatapp.onrender.com',
+    'https://jarrochat.onrender.com',
 ];
 
 app.use(cors({
