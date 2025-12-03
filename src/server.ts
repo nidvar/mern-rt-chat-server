@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 3000;
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import express from 'express';
+import path from 'path';
 
 // import other files
 import authRouter from './routes/auth.route';
@@ -21,6 +22,15 @@ if (process.env.NODE_ENV === 'production') {
 } else {
     app.set('trust proxy', false);
 }
+
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// SPA catch-all (must come after API routes)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 
 const allowedOrigins = [
     'http://localhost:5173',
