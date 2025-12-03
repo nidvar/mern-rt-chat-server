@@ -16,12 +16,11 @@ import { limiter } from './lib/rateLimit';
 import { authMiddleware } from './middleware/authMiddleware';
 import { app, server } from './lib/socket';
 
-app.set('trust proxy', 1);
-
-const allowedOrigins = [
-    'http://localhost:5173',
-    'https://jarrochat.vercel.app'
-];
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+} else {
+    app.set('trust proxy', false);
+}
 
 app.use(cors({
     origin: "https://jarrochat.vercel.app",
