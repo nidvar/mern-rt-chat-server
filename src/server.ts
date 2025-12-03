@@ -57,8 +57,11 @@ app.use('/messages', limiter, authMiddleware, messageRouter);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // SPA catch-all (for non-API routes only)
-app.get(/^\/(?!auth|messages).*/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
+    return next(); // skip to API route if it exists
+  }
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 
