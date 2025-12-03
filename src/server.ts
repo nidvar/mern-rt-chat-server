@@ -44,7 +44,7 @@ app.use(cors({
     credentials: true,
 }));
 
-// Cookie parser
+// Cookie parser and body parsers
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -56,10 +56,11 @@ app.use('/messages', limiter, authMiddleware, messageRouter);
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// SPA catch-all (must come after API routes)
-app.get('*', (req, res) => {
+// SPA catch-all (for non-API routes only)
+app.get(/^\/(?!auth|messages).*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
 
 // Connect to MongoDB
 connectDB();
