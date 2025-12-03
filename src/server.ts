@@ -22,10 +22,23 @@ if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', false);
 }
 
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://jarrochat.vercel.app',
+    'https://mychatapp.onrender.com',
+];
+
 app.use(cors({
-    origin: "https://jarrochat.vercel.app",
+    origin: function(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS not allowed'));
+        }
+    },
     credentials: true,
 }));
+
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
