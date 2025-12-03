@@ -49,19 +49,20 @@ app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// API routes
+// Serve API routes first
 app.use('/auth', limiter, authRouter);
 app.use('/messages', limiter, authMiddleware, messageRouter);
 
-// Serve frontend static files
+// Serve static frontend files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// SPA catch-all (for non-API routes only)
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
-    return next(); // skip to API route if it exists
-  }
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// SPA catch-all — must be **after API routes**
+app.get('*', (req, res) => {
+    // If the request URL starts with /auth or /messages, return 404 instead of index.html
+    if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
+        return res.status(404).json({ message: 'API route not found' });
+    }
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 
