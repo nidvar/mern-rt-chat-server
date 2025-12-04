@@ -1,52 +1,29 @@
-// import environmental requirements
 import dotenv from 'dotenv';
 dotenv.config();
-const PORT = process.env.PORT || 3000;
 
-// import libraries
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import path from 'path';
 
-// import other files
+import { connectDB } from './lib/db';
 import authRouter from './routes/auth.route';
 import messageRouter from './routes/message.route';
-import { connectDB } from './lib/db';
 import { limiter } from './lib/rateLimit';
 import { authMiddleware } from './middleware/authMiddleware';
 import { app, server } from './lib/socket';
 
-// TRUST PROXY (Render uses proxies)
+const PORT = process.env.PORT || 3000;
+
+// TRUST PROXY for Render
 app.set('trust proxy', 1);
 
-// Allowed origins
-const allowedOrigins = [
-    'http://localhost:5173',
-    'https://jarrochat.vercel.app',
-    'https://jarrochat.onrender.com',
-];
-
-// CORS middleware
+// CORS (allow all origins now unnecessary because same-origin)
 app.use(cors({
-    origin: (origin, callback) => {
-        // allow no-origin requests (mobile, curl, server)
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('CORS not allowed'));
-        }
-    },
-    credentials: true,
+  origin: true, // allow same-origin requests
+  credentials: true
 }));
 
-app.use((req, res, next) => {
-  console.log("➡ Incoming:", req.method, req.url);
-  next();
-});
-
-
-// Cookie parser and body parsers
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -58,30 +35,23 @@ app.use('/auth', limiter, authRouter);
 app.use('/messages', limiter, authMiddleware, messageRouter);
 
 // ---------------------
-// STATIC FRONTEND
+// FRONTEND SERVING
 // ---------------------
-
-// IMPORTANT: Serve from project root (NOT dist)
-// This works on Render!
-const publicPath = path.join(process.cwd(), 'public');
-
-// Serve static React build
+const publicPath = path.join(process.cwd(), 'public'); // <-- project root, not dist
 app.use(express.static(publicPath));
 
-// SPA fallback for React
 app.get('*', (req, res) => {
-    // prevent API routes from falling into the SPA
-    if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
-        return res.status(404).json({ message: 'API route not found' });
-    }
-
-    res.sendFile(path.join(publicPath, 'index.html'));
+  if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
+    return res.status(404).json({ message: 'API route not found' });
+  }
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-// Connect to MongoDB
+// ---------------------
+// DATABASE + SERVER
+// ---------------------
 connectDB();
 
-// Start server
 server.listen(PORT, () => {
-    console.log('Server running on port', PORT);
+  console.log('Server running on port', PORT);
 });
