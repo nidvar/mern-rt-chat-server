@@ -48,8 +48,8 @@ app.use((req, res, next) => {
 // ---------------------
 // API ROUTES
 // ---------------------
-app.use('/auth', limiter, authRouter);
-app.use('/messages', limiter, authMiddleware, messageRouter);
+app.use('/api/auth', limiter, authRouter);
+app.use('/api/messages', limiter, authMiddleware, messageRouter);
 
 // ---------------------
 // SOCKET.IO
