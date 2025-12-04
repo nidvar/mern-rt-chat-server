@@ -6,7 +6,7 @@ import { genAccessToken, genRefreshToken, createCookie, clearCookie, uploadImage
 
 
 export const login = async (req: Request, res: Response)=>{
-    console.log(req.body.email);
+    console.log(req.body, '-------------------console log entire body');
     try{
         if(req.body.password.length < 6 || req.body.email === ''){
             return res.status(400).json({ message: 'Invalid credentials'});
