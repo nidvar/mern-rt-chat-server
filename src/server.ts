@@ -115,18 +115,19 @@ io.on('connection', async (socket) => {
   });
 });
 
-// ---------------------
+
 // STATIC FRONTEND + SPA FALLBACK
-// ---------------------
 const publicPath = path.join(__dirname, '..', 'public');
 app.use(express.static(publicPath));
 
+// SPA fallback: any route NOT starting with /api goes to index.html
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
-    return res.status(404).json({ message: 'Not found' });
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ message: 'API route not found' });
   }
   res.sendFile(path.join(publicPath, 'index.html'));
 });
+
 
 // ---------------------
 // CONNECT DATABASE + START SERVER
