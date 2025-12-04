@@ -5,50 +5,52 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
+import http from 'http';
+import { Server } from 'socket.io';
 
-import { connectDB } from './lib/db';
 import authRouter from './routes/auth.route';
 import messageRouter from './routes/message.route';
-import { limiter } from './lib/rateLimit';
 import { authMiddleware } from './middleware/authMiddleware';
-import { app, server } from './lib/socket';
+import { socketMiddleware } from './middleware/socketMiddleware';
+import { limiter } from './lib/rateLimit';
+import { connectDB } from './lib/db';
+import Message from './models/message';
 
-const PORT = process.env.PORT || 3000;
+const app = express();
+const server = http.createServer(app);
 
+// ---------------------
 // TRUST PROXY for Render
-console.log('Setting trust proxy');
+// ---------------------
 app.set('trust proxy', 1);
 
 // ---------------------
 // LOGGING MIDDLEWARE
 // ---------------------
 app.use((req, res, next) => {
-    console.log("➡ Incoming Request:");
-    console.log("Method:", req.method);
-    console.log("Path:", req.path);
-    console.log("Headers:", JSON.stringify(req.headers, null, 2));
-    console.log("Cookies:", req.cookies);
-    if (req.body && Object.keys(req.body).length > 0) {
-        console.log("Body:", req.body);
-    } else {
-        console.log("No body sent with request");
-    }
-    next();
+  console.log('➡ Incoming Request:', req.method, req.path);
+  console.log('Headers:', req.headers);
+  console.log('Cookies:', req.cookies);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Body:', req.body);
+  } else {
+    console.log('No body sent with request');
+  }
+  next();
 });
 
 // ---------------------
 // CORS
 // ---------------------
-console.log('Setting up CORS');
+// Note: frontend and backend are same domain, so simple CORS
 app.use(cors({
   origin: true,
   credentials: true
 }));
 
 // ---------------------
-// Body parsers
+// BODY PARSERS + COOKIE
 // ---------------------
-console.log('Setting up body parsers and cookie parser');
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -56,84 +58,97 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // ---------------------
 // API ROUTES
 // ---------------------
-console.log('Setting up API routes');
-
-app.use('/auth', limiter, (req, res, next) => {
-    console.log("➡ Hit /auth route");
-    next();
-}, authRouter);
-
-app.use('/messages', limiter, authMiddleware, (req, res, next) => {
-    console.log("➡ Hit /messages route");
-    next();
-}, messageRouter);
+app.use('/auth', limiter, authRouter);
+app.use('/messages', limiter, authMiddleware, messageRouter);
 
 // ---------------------
-// Response logging
+// SOCKET.IO
 // ---------------------
-app.use((req, res, next) => {
-    console.log('Wrapping res.send to log outgoing responses');
-    const originalSend = res.send;
-    res.send = function(body?: any) {
-        console.log("⬅ Response for", req.path);
-        console.log("Status:", res.statusCode);
-        const contentType = res.getHeader('Content-Type');
-        if (contentType && typeof contentType === 'string') {
-            console.log("Content-Type:", contentType);
-            if (contentType.includes('application/json')) {
-                try {
-                    console.log("Body (parsed JSON):", JSON.stringify(JSON.parse(body), null, 2));
-                } catch (err) {
-                    console.log("Failed to parse JSON, raw body:", body, "Error:", err);
-                }
-            } else {
-                console.log("Non-JSON response (maybe HTML):", body?.toString().slice(0, 100));
-            }
-        } else {
-            console.log("No Content-Type header, body preview:", body?.toString().slice(0, 100));
-        }
-        return originalSend.call(this, body);
-    };
-    next();
+const allowedOrigins = [
+  'http://localhost:5173', // dev
+  'https://jarrochat.onrender.com'
+];
+
+const io = new Server(server, {
+  cors: {
+    origin: function(origin, callback) {
+      console.log('Socket origin:', origin);
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS not allowed'));
+      }
+    },
+    credentials: true,
+  }
+});
+
+io.use(socketMiddleware);
+
+const userSocketMap: Record<string, string> = {};
+
+const sendAllMessages = async function(userId: string) {
+  const allMessages = await Message.find({
+    $or: [
+      { senderId: userId },
+      { recieverId: userId }
+    ]
+  });
+  const socketId = userSocketMap[userId];
+  if (socketId) {
+    io.to(socketId).emit('allMessagesOnLogin', allMessages);
+  }
+};
+
+io.on('connection', async (socket) => {
+  if (!socket.data.user) return;
+
+  console.log('Socket connected:', socket.data.user);
+  userSocketMap[socket.data.user.id] = socket.id;
+  io.emit('getOnlineUsers', Object.keys(userSocketMap));
+
+  await sendAllMessages(socket.data.user.id);
+
+  socket.on('sendMessage', async (data: {recieverId: string, text?: string, image?: string}) => {
+    const newMessage = await Message.create({
+      senderId: socket.data.user.id,
+      recieverId: data.recieverId,
+      text: data.text,
+      image: data.image
+    });
+
+    const recieverSocketId = userSocketMap[data.recieverId];
+    if (recieverSocketId) io.to(recieverSocketId).emit('singleMessage', [newMessage]);
+    io.to(socket.id).emit('singleMessage', [newMessage]);
+  });
+
+  socket.on('disconnect', () => {
+    delete userSocketMap[socket.data.user.id];
+    io.emit('getOnlineUsers', Object.keys(userSocketMap));
+  });
 });
 
 // ---------------------
-// FRONTEND SERVING
+// STATIC FRONTEND + SPA FALLBACK
 // ---------------------
-const publicPath = path.join(process.cwd(), 'public'); // project root, not dist
-console.log('Serving static files from:', publicPath);
+const publicPath = path.join(__dirname, '..', 'public');
 app.use(express.static(publicPath));
 
-// SPA fallback: only for non-API GET requests
-app.use((req, res, next) => {
-    console.log("➡ SPA fallback check for path:", req.path);
-    if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
-        console.log("Skipping SPA fallback for API path:", req.path);
-        return next();
-    }
-
-    if (req.method !== 'GET') {
-        console.log("Skipping SPA fallback for non-GET method:", req.method);
-        return next();
-    }
-
-    console.log("📄 Serving SPA fallback index.html for path:", req.path);
-    res.sendFile(path.join(publicPath, 'index.html'), (err) => {
-        if (err) {
-            console.error("❌ Error sending index.html:", err);
-            res.status(500).send('Server error');
-        } else {
-            console.log("✅ index.html served successfully");
-        }
-    });
+app.get('*', (req, res) => {
+  // Only serve index.html for non-API GET requests
+  if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
+    return res.status(404).json({ message: 'Not found' });
+  }
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 // ---------------------
-// DATABASE + SERVER
+// CONNECT DATABASE + START SERVER
 // ---------------------
-console.log('Connecting to database...');
 connectDB();
 
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log('Server running on port', PORT);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Frontend served from: ${publicPath}`);
 });
