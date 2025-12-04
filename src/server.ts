@@ -19,9 +19,7 @@ import Message from './models/message';
 const app = express();
 const server = http.createServer(app);
 
-// ---------------------
-// TRUST PROXY for Render
-// ---------------------
+// TRUST PROXY
 app.set('trust proxy', 1);
 
 // ---------------------
@@ -32,41 +30,24 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ---------------------
+// CORS
+// ---------------------
+app.use(cors({ origin: true, credentials: true }));
+
+// ---------------------
 // LOGGING MIDDLEWARE
 // ---------------------
 app.use((req, res, next) => {
   console.log('➡ Incoming Request:', req.method, req.path);
   console.log('Headers:', req.headers);
   console.log('Cookies:', req.cookies);
-  if (req.body && Object.keys(req.body).length > 0) {
-    console.log('Body:', req.body);
-  } else {
-    console.log('No body sent with request');
-  }
+  console.log('Body:', req.body || 'No body sent');
   next();
 });
-
-// ---------------------
-// CORS
-// ---------------------
-// Note: frontend and backend are same domain, so simple CORS
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
-
-
 
 // ---------------------
 // API ROUTES
 // ---------------------
-
-app.use((req, res, next) => {
-  console.log("Incoming request:", req.method, req.path, req.body);
-  next();
-});
-
-
 app.use('/auth', limiter, authRouter);
 app.use('/messages', limiter, authMiddleware, messageRouter);
 
@@ -74,7 +55,6 @@ app.use('/messages', limiter, authMiddleware, messageRouter);
 // SOCKET.IO
 // ---------------------
 const allowedOrigins = [
-  'http://localhost:5173', // dev
   'https://jarrochat.onrender.com'
 ];
 
@@ -88,7 +68,7 @@ const io = new Server(server, {
         callback(new Error('CORS not allowed'));
       }
     },
-    credentials: true,
+    credentials: true
   }
 });
 
@@ -104,9 +84,7 @@ const sendAllMessages = async function(userId: string) {
     ]
   });
   const socketId = userSocketMap[userId];
-  if (socketId) {
-    io.to(socketId).emit('allMessagesOnLogin', allMessages);
-  }
+  if (socketId) io.to(socketId).emit('allMessagesOnLogin', allMessages);
 };
 
 io.on('connection', async (socket) => {
@@ -144,7 +122,6 @@ const publicPath = path.join(__dirname, '..', 'public');
 app.use(express.static(publicPath));
 
 app.get('*', (req, res) => {
-  // Only serve index.html for non-API GET requests
   if (req.path.startsWith('/auth') || req.path.startsWith('/messages')) {
     return res.status(404).json({ message: 'Not found' });
   }
@@ -160,4 +137,3 @@ const PORT = process.env.PORT!;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
