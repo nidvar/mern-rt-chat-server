@@ -58,6 +58,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // ---------------------
 // API ROUTES
 // ---------------------
+
+app.use((req, res, next) => {
+  console.log("Incoming request:", req.method, req.path, req.body);
+  next();
+});
+
+
 app.use('/auth', limiter, authRouter);
 app.use('/messages', limiter, authMiddleware, messageRouter);
 
